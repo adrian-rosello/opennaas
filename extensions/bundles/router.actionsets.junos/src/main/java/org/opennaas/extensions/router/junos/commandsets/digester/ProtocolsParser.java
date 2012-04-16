@@ -3,6 +3,8 @@ package org.opennaas.extensions.router.junos.commandsets.digester;
 import java.io.IOException;
 import java.util.HashMap;
 
+import org.apache.commons.digester.Digester;
+import org.apache.commons.digester.RuleSetBase;
 import org.opennaas.extensions.router.junos.commandsets.commons.IPUtilsHelper;
 import org.opennaas.extensions.router.model.EnabledLogicalElement.EnabledState;
 import org.opennaas.extensions.router.model.NetworkPort;
@@ -10,11 +12,12 @@ import org.opennaas.extensions.router.model.OSPFArea;
 import org.opennaas.extensions.router.model.OSPFAreaConfiguration;
 import org.opennaas.extensions.router.model.OSPFProtocolEndpoint;
 import org.opennaas.extensions.router.model.OSPFService;
+import org.opennaas.extensions.router.model.RIPConfiguration;
+import org.opennaas.extensions.router.model.RIPGroup;
+import org.opennaas.extensions.router.model.RIPProtocolEndpoint;
+import org.opennaas.extensions.router.model.RIPService;
 import org.opennaas.extensions.router.model.System;
 import org.opennaas.extensions.router.model.utils.ModelHelper;
-
-import org.apache.commons.digester.Digester;
-import org.apache.commons.digester.RuleSetBase;
 
 public class ProtocolsParser extends DigesterEngine {
 
@@ -22,6 +25,9 @@ public class ProtocolsParser extends DigesterEngine {
 
 	private boolean		serviceDisabledFlag	= false;
 	private OSPFService	ospfService;
+
+	private RIPService	ripService;
+	private String		groupID				= null;
 
 	class ParserRuleSet extends RuleSetBase {
 		private String	prefix	= "";
@@ -53,6 +59,17 @@ public class ProtocolsParser extends DigesterEngine {
 			addSetNext("*/protocols/ospf/area/", "addOSPFArea", OSPFArea.class.getName());
 			// OSPFService should be created also when addOSPFArea has not been called
 			addMyRule("*/protocols/ospf", "obtainOSPFService", -1); // -1 specifies we want no parameters
+
+			// RIP Protocol
+
+			addObjectCreate("*/protocols/rip/group", RIPGroup.class);
+			addMyRule("*/protocols/rip/group/group_name", "setGroupName", 0);
+			addObjectCreate("*/protocols/rip/group/neighbor", RIPProtocolEndpoint.class);
+			addMyRule("*/protocols/rip/group/neighbor/address", "configureRIPProtocolEndpoint", 0);
+			addSetNext("*/protocols/rip/group/neighbor", "addEndpointToRIPGroup");
+			addSetNext("*/protocols/rip/group", "addRIPGroup");
+			addMyRule("*/protocols/rip", "obtainRIPService", -1);
+
 		}
 	}
 
@@ -193,6 +210,9 @@ public class ProtocolsParser extends DigesterEngine {
 	 * @return
 	 */
 	public OSPFService obtainOSPFService() {
+
+		groupID = null;
+
 		if (ospfService != null)
 			return ospfService;
 
@@ -206,4 +226,75 @@ public class ProtocolsParser extends DigesterEngine {
 
 		return ospfService;
 	}
+
+	/**
+	 * Get ripService or creates it if necessary.
+	 * 
+	 * Created RIPService has its state setted up, and has already been included in model.
+	 * 
+	 * @return
+	 */
+	public RIPService obtainRIPService() {
+		if (ripService != null)
+			return ripService;
+
+		ripService = new RIPService();
+		model.addHostedService(ripService);
+		return ripService;
+	}
+
+	public void setGroupName(String name) {
+		assert (name != null);
+
+		Object obj = peek(0);
+		assert (obj instanceof RIPGroup);
+		((RIPGroup) obj).setName(name);
+		groupID = name;
+	}
+
+	public void configureRIPProtocolEndpoint(String interfaceName) {
+
+		Object obj = peek(0);
+		assert (obj instanceof RIPProtocolEndpoint);
+
+		RIPProtocolEndpoint ripEndpoint = (RIPProtocolEndpoint) obj;
+		ripEndpoint.setName(interfaceName);
+		NetworkPort matchingInterface = null;
+		boolean isSubInterface = interfaceName.contains(".");
+		if (isSubInterface) {
+			String ifaceName = interfaceName.split("\\.")[0];
+			int ifacePortNumber = Integer.parseInt(interfaceName.split("\\.")[1]);
+
+			for (NetworkPort iface : ModelHelper.getInterfaces(this.getModel())) {
+				if (iface.getName().equals(ifaceName) && iface.getPortNumber() == ifacePortNumber) {
+					matchingInterface = iface;
+					break;
+				}
+			}
+		} else {
+			for (NetworkPort iface : ModelHelper.getInterfaces(this.getModel())) {
+				if (iface.getName().equals(interfaceName)) {
+					matchingInterface = iface;
+					break;
+				}
+			}
+		}
+		if (matchingInterface != null) {
+			matchingInterface.addProtocolEndpoint(ripEndpoint);
+		}
+	}
+
+	public void addRIPGroup(RIPGroup ripGroup) {
+
+		Object obj = peek(0);
+		assert (obj instanceof RIPGroup);
+		RIPService ripService = obtainRIPService();
+
+		RIPConfiguration ripConfig = new RIPConfiguration();
+		ripConfig.setRIPGroup(ripGroup);
+
+		ripService.addRIPGroup(ripGroup);
+
+	}
+
 }

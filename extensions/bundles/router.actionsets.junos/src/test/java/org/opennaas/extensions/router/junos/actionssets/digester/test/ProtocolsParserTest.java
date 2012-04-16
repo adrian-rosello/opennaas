@@ -7,6 +7,10 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 import junit.framework.Assert;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.Test;
 import org.opennaas.extensions.router.junos.commandsets.digester.ProtocolsParser;
 import org.opennaas.extensions.router.model.ComputerSystem;
 import org.opennaas.extensions.router.model.EnabledLogicalElement.EnabledState;
@@ -14,11 +18,12 @@ import org.opennaas.extensions.router.model.NetworkPort;
 import org.opennaas.extensions.router.model.OSPFAreaConfiguration;
 import org.opennaas.extensions.router.model.OSPFProtocolEndpointBase;
 import org.opennaas.extensions.router.model.OSPFService;
+import org.opennaas.extensions.router.model.RIPConfiguration;
+import org.opennaas.extensions.router.model.RIPGroup;
+import org.opennaas.extensions.router.model.RIPProtocolEndpoint;
+import org.opennaas.extensions.router.model.RIPService;
+import org.opennaas.extensions.router.model.Service;
 import org.opennaas.extensions.router.model.System;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.Test;
 
 public class ProtocolsParserTest {
 
@@ -106,6 +111,46 @@ public class ProtocolsParserTest {
 
 		OSPFService ospfService = (OSPFService) ospfServices.get(0);
 		Assert.assertTrue("Service state must have been set to DISABLED", EnabledState.DISABLED.equals(ospfService.getEnabledState()));
+	}
+
+	@Test
+	public void testParserWithMultipleRIPGroups() throws Exception {
+
+		String message = readStringFromFile("/parsers/getConfigWithRIP.xml");
+		System model = createSampleModel();
+		ProtocolsParser parser = new ProtocolsParser(model);
+		parser.init();
+		parser.configurableParse(new ByteArrayInputStream(message.getBytes()));
+
+		System updatedModel = parser.getModel();
+		Assert.assertFalse("There must be one RIP Service.", updatedModel.getHostedService().isEmpty());
+
+		Service service = updatedModel.getHostedService().get(0);
+		assert (service instanceof RIPService);
+
+		RIPService ripService = (RIPService) service;
+		List<RIPGroup> groupList = ripService.getRIPGroups();
+		Assert.assertEquals("There must be two RIP Groups.", groupList.size(), 2);
+
+		RIPGroup ripGroup1 = groupList.get(0);
+		RIPGroup ripGroup2 = groupList.get(1);
+		Assert.assertEquals("The name of the first group should be \"RIP Group 1\"", ripGroup1.getName(), "RIP Group 1");
+		Assert.assertEquals("The name of the second group should be \"RIP Group 2\"", ripGroup2.getName(), "RIP Group 2");
+
+		RIPConfiguration config = ripGroup1.getRIPGroupConfiguration();
+		Assert.assertNotNull("There should be a RIP Configuration for \"RIP Group 1\" stored.", config);
+		config = ripGroup2.getRIPGroupConfiguration();
+		Assert.assertNotNull("There should be a RIP Configuration for \"RIP Group 2\" stored.", config);
+
+		List<RIPProtocolEndpoint> endpointList = ripGroup1.getRIPProtocolEndpoints();
+		Assert.assertEquals(endpointList.size(), 2);
+
+		Assert.assertTrue("First interface of \"RIP Group 1\" should be fe-0/3/0.0", endpointList.get(0).getName().equals("fe-0/3/0.0"));
+		Assert.assertTrue("First interface of \"RIP Group 2\"  should be fe-0/3/0.1", endpointList.get(1).getName().equals("fe-0/3/1.0"));
+
+		endpointList = ripGroup2.getRIPProtocolEndpoints();
+		Assert.assertEquals("\"RIP Group 2\" should not have any interface.", endpointList.size(), 0);
+
 	}
 
 	/**
