@@ -19,6 +19,7 @@ public class RIPProtocolEndpoint extends ProtocolEndpoint implements
 
 	private AuthType	authType;
 	private String		authKey;
+	private long		retransmitInterval;
 
 	public RIPProtocolEndpoint() {
 	};
@@ -37,6 +38,14 @@ public class RIPProtocolEndpoint extends ProtocolEndpoint implements
 
 	public AuthType getAuthType() {
 		return this.authType;
+	}
+
+	public void setRetransmitInterval(long interval) {
+		this.retransmitInterval = interval;
+	}
+
+	public long getRetransmitInterval() {
+		return this.retransmitInterval;
 	}
 
 	public void setRIPGroup(RIPGroup group) {
