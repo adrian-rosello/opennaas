@@ -10,13 +10,13 @@ import java.util.List;
  */
 public class RIPGroup extends RoutingProtocolDomain implements Serializable {
 
-	private long	groupID;
+	private String	groupID;
 
-	public void setGroupID(long id) {
-		this.groupID = id;
+	public void setGroupID(String name) {
+		this.groupID = name;
 	}
 
-	public long getGroupID() {
+	public String getGroupID() {
 		return this.groupID;
 	}
 
