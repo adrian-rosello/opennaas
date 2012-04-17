@@ -65,18 +65,4 @@ public class RIPProtocolEndpoint extends ProtocolEndpoint implements
 	public RIPGroup getRIPGroup() {
 		return (RIPGroup) this.getFirstFromAssociatedElementByType(EndpointInGroup.class);
 	}
-
-	public void setRIPLink(RIPLink ripLink) {
-		if (ripLink != null)
-			RIPEndpointInLink.link(ripLink, this);
-	}
-
-	public void unsetRIPLink(RIPLink ripLink) {
-		if (ripLink != null) {
-			Association a = this.getFirstToAssociationByTypeAndElement(RIPEndpointInLink.class, ripLink);
-			if (a != null)
-				a.unlink();
-		}
-	}
-
 }

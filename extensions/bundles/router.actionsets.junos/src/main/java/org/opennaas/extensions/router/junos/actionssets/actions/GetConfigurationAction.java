@@ -17,13 +17,22 @@ import org.opennaas.extensions.router.junos.commandsets.commands.GetNetconfComma
 import org.opennaas.extensions.router.junos.commandsets.digester.DigesterEngine;
 import org.opennaas.extensions.router.junos.commandsets.digester.IPInterfaceParser;
 import org.opennaas.extensions.router.junos.commandsets.digester.ListLogicalRoutersParser;
+import org.opennaas.extensions.router.junos.commandsets.digester.ProtocolsParser;
 import org.opennaas.extensions.router.junos.commandsets.digester.RoutingOptionsParser;
 import org.opennaas.extensions.router.model.ComputerSystem;
 import org.opennaas.extensions.router.model.GREService;
 import org.opennaas.extensions.router.model.GRETunnelService;
+import org.opennaas.extensions.router.model.LogicalPort;
 import org.opennaas.extensions.router.model.LogicalTunnelPort;
 import org.opennaas.extensions.router.model.ManagedElement;
 import org.opennaas.extensions.router.model.NetworkPort;
+import org.opennaas.extensions.router.model.OSPFAreaConfiguration;
+import org.opennaas.extensions.router.model.OSPFProtocolEndpointBase;
+import org.opennaas.extensions.router.model.OSPFService;
+import org.opennaas.extensions.router.model.RIPGroup;
+import org.opennaas.extensions.router.model.RIPProtocolEndpoint;
+import org.opennaas.extensions.router.model.RIPService;
+import org.opennaas.extensions.router.model.Service;
 import org.opennaas.extensions.router.model.System;
 import org.xml.sax.SAXException;
 
@@ -84,6 +93,8 @@ public class GetConfigurationAction extends JunosAction {
 
 				/* Parse interface info */
 				routerModel = parseInterfaces(routerModel, message);
+
+				routerModel = parseProtocols(routerModel, message);
 
 				/* Parse routing options info */
 				// Routing options parsing should be done after parsing protocols (protocols is required):
@@ -178,6 +189,84 @@ public class GetConfigurationAction extends JunosAction {
 		routingOptionsParser.configurableParse(new ByteArrayInputStream(message.getBytes("UTF-8")));
 
 		routerModel = routingOptionsParser.getModel();
+		return routerModel;
+	}
+
+	/**
+	 * Parses protocols data from message and puts in into routerModel.
+	 * 
+	 * @param routerModel
+	 *            to store parsed data
+	 * @param message
+	 *            to parse interfaces data from
+	 * @return routerModel updated with interfaces information from message.
+	 * @throws
+	 * @throws IOException
+	 * @throws SAXException
+	 */
+	private System parseProtocols(System routerModel, String message) throws IOException, SAXException {
+
+		routerModel = removeProtocolsServiceFromModel(routerModel);
+
+		ProtocolsParser protocolsParser = new ProtocolsParser(routerModel);
+		protocolsParser.init();
+		protocolsParser.configurableParse(new ByteArrayInputStream(message.getBytes("UTF-8")));
+
+		routerModel = protocolsParser.getModel();
+
+		return routerModel;
+	}
+
+	private System removeProtocolsServiceFromModel(System routerModel) {
+
+		// get OSPFService and RIPService
+		OSPFService ospfService = null;
+		RIPService ripService = null;
+
+		for (Service service : routerModel.getHostedService()) {
+			if (service instanceof OSPFService)
+				ospfService = (OSPFService) service;
+			else if (service instanceof RIPService)
+				ripService = (RIPService) service;
+		}
+		if ((ospfService == null) && (ripService == null))
+			return routerModel;
+
+		if (ospfService != null)
+			routerModel = removeOSPF(routerModel, ospfService);
+
+		if (ripService != null)
+			routerModel = removeRIP(routerModel, ripService);
+
+		return routerModel;
+	}
+
+	private System removeRIP(System routerModel, RIPService ripService) {
+		// REMOVE ALL MODEL RELATED TO RIP
+		for (RIPGroup ripGroup : ripService.getRIPGroups()) {
+			ripGroup.unsetRIPGroupConfiguration(ripGroup.getRIPGroupConfiguration());
+			for (RIPProtocolEndpoint endpoint : ripGroup.getRIPProtocolEndpoints()) {
+				ripGroup.removeEndpointFromRIPGroup(endpoint);
+			}
+			ripService.removeRIPGroup(ripGroup);
+		}
+		routerModel.removeHostedService(ripService);
+		return routerModel;
+	}
+
+	private System removeOSPF(System routerModel, OSPFService ospfService) {
+		// REMOVE ALL MODEL RELATED TO OSPF
+		for (OSPFAreaConfiguration areaConf : ospfService.getOSPFAreaConfiguration()) {
+			for (OSPFProtocolEndpointBase ospfPEP : areaConf.getOSPFArea().getEndpointsInArea()) {
+				for (LogicalPort port : ospfPEP.getLogicalPorts()) {
+					// unlink OSPFProtocolEndpoint with NetworkPorts.
+					ospfPEP.removeLogicalPort(port);
+				}
+				areaConf.getOSPFArea().removeEndpointInArea(ospfPEP);
+			}
+			ospfService.removeOSPFAreaConfiguration(areaConf);
+		}
+		routerModel.removeHostedService(ospfService);
 		return routerModel;
 	}
 
