@@ -1,4 +1,4 @@
-package org.opennaas.extensions.router.capability.ospf;
+package org.opennaas.extensions.router.capability.rip;
 
 import java.util.Properties;
 
@@ -15,7 +15,9 @@ import org.osgi.framework.Filter;
 import org.osgi.framework.InvalidSyntaxException;
 
 /**
- * @author Jordi Puig
+ * 
+ * @author Adrian Rosello
+ * 
  */
 public class Activator extends AbstractActivator implements BundleActivator {
 
@@ -93,13 +95,13 @@ public class Activator extends AbstractActivator implements BundleActivator {
 	 * @return IActionSet
 	 * @throws ActivatorException
 	 */
-	public static IActionSet getOSPFActionSetService(String name, String version)
+	public static IActionSet getRIPActionSetService(String name, String version)
 			throws ActivatorException {
 
 		try {
-			log.debug("Calling OSPFActionSetService");
+			log.debug("Calling RIPActionSetService");
 			return (IActionSet) getServiceFromRegistry(context,
-					createFilterOSPFActionSet(name, version));
+					createFilterRIPActionSet(name, version));
 		} catch (InvalidSyntaxException e) {
 			throw new ActivatorException(e);
 		}
@@ -113,16 +115,15 @@ public class Activator extends AbstractActivator implements BundleActivator {
 	 * @return Filter
 	 * @throws InvalidSyntaxException
 	 */
-	private static Filter createFilterOSPFActionSet(String name, String version)
+	private static Filter createFilterRIPActionSet(String name, String version)
 			throws InvalidSyntaxException {
 
 		Properties properties = new Properties();
 		properties.setProperty(ResourceDescriptorConstants.ACTION_CAPABILITY,
-				"ospf");
+				"rip");
 		properties.setProperty(ResourceDescriptorConstants.ACTION_NAME, name);
 		properties.setProperty(ResourceDescriptorConstants.ACTION_VERSION,
 				version);
 		return createServiceFilter(IActionSet.class.getName(), properties);
 	}
-
 }

@@ -1,0 +1,168 @@
+package org.opennaas.extentions.router.capability.rip.tests;
+
+import static org.openengsb.labs.paxexam.karaf.options.KarafDistributionOption.keepRuntimeFolder;
+import static org.opennaas.extensions.nexus.tests.helper.OpennaasExamOptions.includeFeatures;
+import static org.opennaas.extensions.nexus.tests.helper.OpennaasExamOptions.includeTestHelper;
+import static org.opennaas.extensions.nexus.tests.helper.OpennaasExamOptions.noConsole;
+import static org.opennaas.extensions.nexus.tests.helper.OpennaasExamOptions.opennaasDistributionConfiguration;
+import static org.ops4j.pax.exam.CoreOptions.options;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.opennaas.core.resources.IResource;
+import org.opennaas.core.resources.IResourceManager;
+import org.opennaas.core.resources.Resource;
+import org.opennaas.core.resources.ResourceIdentifier;
+import org.opennaas.core.resources.capability.ICapability;
+import org.opennaas.core.resources.capability.ICapabilityFactory;
+import org.opennaas.core.resources.descriptor.ResourceDescriptor;
+import org.opennaas.core.resources.helpers.ResourceDescriptorFactory;
+import org.opennaas.core.resources.protocol.IProtocolManager;
+import org.opennaas.core.resources.protocol.ProtocolSessionContext;
+import org.opennaas.extensions.router.model.ComputerSystem;
+import org.opennaas.extensions.router.repository.MantychoreBootstrapper;
+import org.ops4j.pax.exam.Option;
+import org.ops4j.pax.exam.junit.Configuration;
+import org.ops4j.pax.exam.junit.JUnit4TestRunner;
+import org.ops4j.pax.exam.util.Filter;
+import org.osgi.framework.BundleContext;
+import org.osgi.service.blueprint.container.BlueprintContainer;
+
+/**
+ * 
+ * @author Adrian Rosello
+ * 
+ */
+@RunWith(JUnit4TestRunner.class)
+public class RIPCapabilityIntegrationTest {
+
+	private final String		deviceID	= "junos";
+	private final String		queueID		= "queue";
+
+	private static final Log	log			= LogFactory
+													.getLog(RIPCapabilityIntegrationTest.class);
+
+	@Inject
+	private IProtocolManager	protocolManager;
+	@Inject
+	private IResourceManager	resourceManager;
+
+	private IResource			routerResource;
+
+	private ICapability			ripCapability;
+	private ICapability			queueCapability;
+
+	@Inject
+	protected BundleContext		bundleContext;
+
+	@Inject
+	@Filter("(osgi.blueprint.container.symbolicname=org.opennaas.extensions.protocols.netconf)")
+	private BlueprintContainer	netconfService;
+
+	@Inject
+	@Filter("(capability=queue)")
+	private ICapabilityFactory	queueManagerFactory;
+
+	@Inject
+	@Filter("(capability=rip)")
+	private ICapabilityFactory	ripFactory;
+
+	@Inject
+	@Filter("(osgi.blueprint.container.symbolicname=org.opennaas.extensions.router.repository)")
+	private BlueprintContainer	routerService;
+
+	@Configuration
+	public static Option[] configuration() {
+		return options(opennaasDistributionConfiguration(),
+				includeFeatures("opennaas-router"),
+				includeTestHelper(),
+				noConsole(),
+				keepRuntimeFolder());
+		// new VMOption("-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"));
+	}
+
+	@Before
+	public void setup() throws Exception {
+		initResource();
+		initCapability();
+	}
+
+	@Test
+	public void exampleTest() {
+		// TODO implementation of a test. If the current build is success means that the @before actions runs successfuly (what menans that the rip
+		// capability is accesible)
+
+	}
+
+	public void initResource() {
+
+		/* initialize model */
+		routerResource = new Resource();
+		routerResource.setModel(new ComputerSystem());
+		routerResource.setBootstrapper(new MantychoreBootstrapper());
+
+		List<String> capabilities = new ArrayList<String>();
+
+		capabilities.add("rip");
+		capabilities.add("queue");
+		ResourceDescriptor resourceDescriptor =
+				ResourceDescriptorFactory.newResourceDescriptor(deviceID, "router", capabilities);
+		routerResource.setResourceDescriptor(resourceDescriptor);
+		routerResource.setResourceIdentifier(new ResourceIdentifier(resourceDescriptor.getInformation().getType(), resourceDescriptor.getId()));
+
+	}
+
+	public void initCapability() throws Exception {
+
+		log.info("INFO: Before test, getting queue...");
+		Assert.assertNotNull(queueManagerFactory);
+
+		queueCapability = queueManagerFactory.create(routerResource);
+		queueCapability.initialize();
+
+		protocolManager.getProtocolSessionManagerWithContext(routerResource.getResourceIdentifier().getId(), newSessionContextNetconf());
+
+		// Test elements not null
+
+		log.info("Checking chassis factory");
+		Assert.assertNotNull(ripFactory);
+
+		log.info("Checking capability descriptor");
+		Assert.assertNotNull(routerResource.getResourceDescriptor().getCapabilityDescriptor("rip"));
+		log.info("Creating chassis capability");
+		ripCapability = ripFactory.create(routerResource);
+		Assert.assertNotNull(ripCapability);
+		ripCapability.initialize();
+
+		routerResource.addCapability(ripCapability);
+		routerResource.addCapability(queueCapability);
+	}
+
+	/**
+	 * Configure the protocol to connect
+	 */
+	private ProtocolSessionContext newSessionContextNetconf() {
+		String uri = System.getProperty("protocol.uri");
+		if (uri == null || uri.equals("${protocol.uri}") || uri.isEmpty()) {
+			uri = "mock://user:pass@host.net:2212/mocksubsystem";
+		}
+		log.debug("FFFF test setup uri: " + uri + "Length: " + uri.length());
+		ProtocolSessionContext protocolSessionContext = new ProtocolSessionContext();
+
+		protocolSessionContext.addParameter(ProtocolSessionContext.PROTOCOL_URI, uri);
+		protocolSessionContext.addParameter(ProtocolSessionContext.PROTOCOL,
+				"netconf");
+		// ADDED
+		return protocolSessionContext;
+	}
+
+}
