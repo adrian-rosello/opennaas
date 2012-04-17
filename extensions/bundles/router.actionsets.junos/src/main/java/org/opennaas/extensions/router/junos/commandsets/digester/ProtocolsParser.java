@@ -65,7 +65,7 @@ public class ProtocolsParser extends DigesterEngine {
 			addObjectCreate("*/protocols/rip/group", RIPGroup.class);
 			addMyRule("*/protocols/rip/group/group_name", "setGroupName", 0);
 			addObjectCreate("*/protocols/rip/group/neighbor", RIPProtocolEndpoint.class);
-			addMyRule("*/protocols/rip/group/neighbor/address", "configureRIPProtocolEndpoint", 0);
+			addMyRule("*/protocols/rip/group/neighbor/neighbor_name", "configureRIPProtocolEndpoint", 0);
 			addSetNext("*/protocols/rip/group/neighbor", "addEndpointToRIPGroup");
 			addSetNext("*/protocols/rip/group", "addRIPGroup");
 			addMyRule("*/protocols/rip", "obtainRIPService", -1);
