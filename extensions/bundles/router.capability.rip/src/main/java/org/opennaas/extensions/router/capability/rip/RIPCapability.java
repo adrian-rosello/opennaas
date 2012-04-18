@@ -1,14 +1,20 @@
 package org.opennaas.extensions.router.capability.rip;
 
 import java.util.List;
+import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.opennaas.core.resources.ActivatorException;
+import org.opennaas.core.resources.action.IAction;
 import org.opennaas.core.resources.action.IActionSet;
 import org.opennaas.core.resources.capability.AbstractCapability;
 import org.opennaas.core.resources.capability.CapabilityException;
 import org.opennaas.core.resources.command.Response;
 import org.opennaas.core.resources.descriptor.CapabilityDescriptor;
+import org.opennaas.core.resources.descriptor.ResourceDescriptorConstants;
+import org.opennaas.extensions.queuemanager.IQueueManagerService;
+import org.opennaas.extensions.router.junos.actionssets.ActionConstants;
 import org.opennaas.extensions.router.model.RIPGroup;
 import org.opennaas.extensions.router.model.RIPProtocolEndpoint;
 import org.opennaas.extensions.router.model.RIPService;
@@ -34,9 +40,24 @@ public class RIPCapability extends AbstractCapability implements IRIPService {
 	}
 
 	@Override
-	public Object sendMessage(String arg0, Object arg1) throws CapabilityException {
-		// TODO Auto-generated method stub
-		return null;
+	public Object sendMessage(String idOperation, Object params) {
+
+		// log.debug("Sending message to RIP Capability");
+		try {
+			IQueueManagerService queueManager = Activator.getQueueManagerService(resourceId);
+			IAction action = createAction(idOperation);
+			action.setParams(params);
+			action.setModelToUpdate(resource.getModel());
+			queueManager.queueAction(action);
+
+		} catch (Exception e) {
+			Vector<String> errorMsgs = new Vector<String>();
+			errorMsgs
+					.add(e.getMessage() + ":" + '\n' + e.getLocalizedMessage());
+			return Response.errorResponse(idOperation, errorMsgs);
+		}
+
+		return Response.queuedResponse(idOperation);
 	}
 
 	@Override
@@ -57,16 +78,9 @@ public class RIPCapability extends AbstractCapability implements IRIPService {
 		return null;
 	}
 
-	@Override
-	public Response configureRIPGroup(RIPGroup ripGroup) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public Response configureRIPGroup(RIPGroup ripGroup) throws CapabilityException {
 
-	@Override
-	public Response getRIPConfiguration() {
-		// TODO Auto-generated method stub
-		return null;
+		return (Response) sendMessage(ActionConstants.RIP_CONFIGURE_GROUP, ripGroup);
 	}
 
 	@Override
@@ -99,10 +113,19 @@ public class RIPCapability extends AbstractCapability implements IRIPService {
 
 	}
 
-	@Override
+	/**
+	 * Return the RIP ActionSet
+	 */
 	public IActionSet getActionSet() throws CapabilityException {
-		// TODO Auto-generated method stub
-		return null;
+
+		String name = this.descriptor.getPropertyValue(ResourceDescriptorConstants.ACTION_NAME);
+		String version = this.descriptor.getPropertyValue(ResourceDescriptorConstants.ACTION_VERSION);
+
+		try {
+			return Activator.getRIPActionSetService(name, version);
+		} catch (ActivatorException e) {
+			throw new CapabilityException(e);
+		}
 	}
 
 	@Override

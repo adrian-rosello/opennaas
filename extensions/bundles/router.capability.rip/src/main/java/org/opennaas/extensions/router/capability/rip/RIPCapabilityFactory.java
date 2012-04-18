@@ -8,6 +8,7 @@ import org.opennaas.core.resources.descriptor.CapabilityDescriptor;
 
 public class RIPCapabilityFactory extends AbstractCapabilityFactory {
 
+	@Override
 	public ICapability create(IResource resource) throws CapabilityException {
 
 		ICapability capability = this.create(resource.getResourceDescriptor().getCapabilityDescriptor(RIPCapability.CAPABILITY_NAME),
@@ -16,6 +17,7 @@ public class RIPCapabilityFactory extends AbstractCapabilityFactory {
 		return capability;
 	}
 
+	@Override
 	public ICapability createCapability(CapabilityDescriptor capabilityDescriptor, String resourceId) throws CapabilityException {
 
 		return new RIPCapability(capabilityDescriptor, resourceId);

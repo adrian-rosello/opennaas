@@ -27,39 +27,8 @@
 			<!--  TODO it is necessary to use two parameters to get capability -->
 			<entry key="capability" value="rip"/>
 			<entry key="capability.model" value="junos"/>
-			<entry key="capability.version" value="10.10"/>
+			<entry key="capability.version" value="1.0.0"/>
 		</service-properties>
 	</service>
 	<!-- Provide commands to the Karaf shell -->
-	
-	<command-bundle xmlns="http://karaf.apache.org/xmlns/shell/v1.0.0">
-		<command name="rip/configure">
-			<action class="org.opennaas.extensions.router.capability.rip.shell.ConfigureCommand"/>
-			<completers>
-				<ref component-id="resourceNameCompleter"/>
-				<null/>
-			</completers>
-		</command>
-		<command name="rip/show">
-			<action class="org.opennaas.extensions.router.capability.rip.shell.ShowCommand"/>
-			<completers>
-				<ref component-id="resourceNameCompleter"/>
-				<null/>
-			</completers>
-		</command>
-		<command name="rip/configureInterfaceInGroup">
-			<action class="org.opennaas.extensions.router.capability.rip.shell.ConfigureInterfaceInGroupCommand"/>
-			<completers>
-				<ref component-id="resourceNameCompleter"/>
-				<null/>
-		</completers>
-		</command>
-		<command name="rip/configureGroup">
-			<action class="org.opennaas.extensions.router.capability.rip.shell.ConfigureGroupCommand"/>
-			<completers>
-				<ref component-id="resourceNameCompleter"/>
-				<null/>
-			</completers>
-		</command>		
-	</command-bundle>
 </blueprint>

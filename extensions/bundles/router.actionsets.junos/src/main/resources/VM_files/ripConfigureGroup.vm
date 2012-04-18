@@ -1,0 +1,26 @@
+<configuration>
+	#set( $logicalRouter = "false" )
+	#if(!$elementName.equals("") )
+		#set($logicalRouter = "true")
+	#end
+	#if($logicalRouter.equals("true"))
+		<logical-systems>
+			<name>$elementName</name>
+	#end
+	
+	<protocols>	
+		<rip>
+			<group>
+				<group_name>$param.getName()</group_name>
+				#foreach($ripEndpoint in $param.getRIPProtocolEndpoints())
+				<neighbor>
+					<neighbor_name>$ripEndpoint.getName()</neighbor_name>
+				</neighbor>
+				#end
+			</group>
+		</rip>
+	</protocols>
+	#if($logicalRouter.equals("true"))
+		</logical-systems>
+	#end
+</configuration>

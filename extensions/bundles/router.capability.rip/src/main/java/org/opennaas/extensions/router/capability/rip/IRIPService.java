@@ -2,6 +2,7 @@ package org.opennaas.extensions.router.capability.rip;
 
 import java.util.List;
 
+import org.opennaas.core.resources.capability.CapabilityException;
 import org.opennaas.core.resources.command.Response;
 import org.opennaas.extensions.router.model.RIPGroup;
 import org.opennaas.extensions.router.model.RIPProtocolEndpoint;
@@ -43,15 +44,9 @@ public interface IRIPService {
 	 * 
 	 * @param ripGroup
 	 * @return
+	 * @throws CapabilityException
 	 */
-	public Response configureRIPGroup(RIPGroup ripGroup);
-
-	/**
-	 * Retrieves all the RIP configuration from the router.
-	 * 
-	 * @return
-	 */
-	public Response getRIPConfiguration();
+	public Response configureRIPGroup(RIPGroup ripGroup) throws CapabilityException;
 
 	/**
 	 * Removes all interfaces of the list from the given RIP Group.

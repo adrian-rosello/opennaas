@@ -51,6 +51,10 @@ public class ActionConstants {
 	public static final String	OSPF_ADD_INTERFACE_IN_AREA			= "addOSPFInterfaceInArea";
 	public static final String	OSPF_REMOVE_INTERFACE_IN_AREA		= "removeOSPFInterfaceInArea";
 
+	// RIP actionset
+	public static final String	RIP_CONFIGURE_GROUP					= "configureRIPGroup";
+
 	// Static Route actionset
-	public static final String	STATIC_ROUTE_CREATE				= "createStaticRoute";
+	public static final String	STATIC_ROUTE_CREATE					= "createStaticRoute";
+
 }
