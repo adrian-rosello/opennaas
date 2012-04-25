@@ -213,7 +213,6 @@ public class GetConfigActionTest {
 		Assert.assertEquals("Only a RIP Group should be present at the model.", ripService.getRIPGroups().size(), 1);
 		RIPGroup ripGroup = ripService.getRIPGroups().get(0);
 
-		Assert.assertNotNull("A RIP Group Configuration should be present at the model.", ripGroup.getRIPGroupConfiguration());
 		Assert.assertEquals("Only one interface should be present at the RIP Group.", ripGroup.getRIPProtocolEndpoints().size(), 1);
 
 		// TODO can't check the name of the interface and the group, because of the netconf4j xml configuration. See comment on line 134 of this file.

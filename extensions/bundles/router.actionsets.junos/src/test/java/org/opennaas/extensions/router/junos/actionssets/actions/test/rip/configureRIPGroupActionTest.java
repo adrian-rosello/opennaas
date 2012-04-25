@@ -6,7 +6,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opennaas.core.protocols.sessionmanager.impl.ProtocolSessionManager;
+import org.opennaas.core.protocols.sessionmanager.ProtocolSessionManager;
 import org.opennaas.core.resources.action.ActionException;
 import org.opennaas.core.resources.action.ActionResponse;
 import org.opennaas.extensions.router.junos.actionssets.ActionConstants;
@@ -34,7 +34,7 @@ public class configureRIPGroupActionTest {
 		action = new ConfigureRIPGroupAction();
 		action.setModelToUpdate(new ComputerSystem());
 		helper = new ActionTestHelper();
-		action.setParams(helper.newParamsInterfaceEthernet());
+		action.setParams(getRIPGroup());
 		helper = new ActionTestHelper();
 		protocolsessionmanager = helper.getProtocolSessionManager();
 	}
@@ -74,13 +74,14 @@ public class configureRIPGroupActionTest {
 					.equals(ActionConstants.RIP_CONFIGURE_GROUP));
 		} catch (ActionException e) {
 			log.error(e.getMessage());
+			Assert.fail();
 		}
 
 		org.opennaas.extensions.router.model.System computerSystem = (org.opennaas.extensions.router.model.System) action.getModelToUpdate();
 		Assert.assertNotNull(computerSystem);
 	}
 
-	private RIPGroup getRIPGroup() {
+	private static RIPGroup getRIPGroup() {
 
 		RIPGroup ripGroup = new RIPGroup();
 		ripGroup.setName("RIP-test-group");
@@ -91,7 +92,7 @@ public class configureRIPGroupActionTest {
 		return ripGroup;
 	}
 
-	private RIPProtocolEndpoint getRIPProtocolEndpoint(String logicalPortName, String logicalPortNumber) {
+	private static RIPProtocolEndpoint getRIPProtocolEndpoint(String logicalPortName, String logicalPortNumber) {
 
 		RIPProtocolEndpoint endpoint = new RIPProtocolEndpoint();
 		endpoint.setName(logicalPortName + "." + logicalPortNumber);

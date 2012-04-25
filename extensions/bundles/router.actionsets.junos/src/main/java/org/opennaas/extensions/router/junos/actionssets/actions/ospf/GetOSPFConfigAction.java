@@ -3,6 +3,13 @@ package org.opennaas.extensions.router.junos.actionssets.actions.ospf;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
+import net.i2cat.netconf.rpc.Reply;
+
+import org.opennaas.core.resources.action.ActionException;
+import org.opennaas.core.resources.action.ActionResponse;
+import org.opennaas.core.resources.command.CommandException;
+import org.opennaas.core.resources.command.Response;
+import org.opennaas.core.resources.protocol.IProtocolSession;
 import org.opennaas.extensions.router.junos.actionssets.ActionConstants;
 import org.opennaas.extensions.router.junos.actionssets.actions.JunosAction;
 import org.opennaas.extensions.router.junos.commandsets.commands.GetNetconfCommand;
@@ -23,13 +30,6 @@ import org.opennaas.extensions.router.model.RIPProtocolEndpoint;
 import org.opennaas.extensions.router.model.RIPService;
 import org.opennaas.extensions.router.model.Service;
 import org.opennaas.extensions.router.model.System;
-import net.i2cat.netconf.rpc.Reply;
-
-import org.opennaas.core.resources.action.ActionException;
-import org.opennaas.core.resources.action.ActionResponse;
-import org.opennaas.core.resources.command.CommandException;
-import org.opennaas.core.resources.command.Response;
-import org.opennaas.core.resources.protocol.IProtocolSession;
 import org.xml.sax.SAXException;
 
 /**
@@ -150,7 +150,7 @@ public class GetOSPFConfigAction extends JunosAction {
 	 */
 	private System parseProtocols(System routerModel, String message) throws IOException, SAXException {
 
-		routerModel = removeOSPFServiceFromModel(routerModel);
+		routerModel = removeProtocolsServiceFromModel(routerModel);
 
 		ProtocolsParser protocolsParser = new ProtocolsParser(routerModel);
 		protocolsParser.init();
@@ -160,7 +160,7 @@ public class GetOSPFConfigAction extends JunosAction {
 
 		return routerModel;
 	}
-	
+
 	private System removeProtocolsServiceFromModel(System routerModel) {
 
 		// get OSPFService and RIPService
@@ -188,7 +188,6 @@ public class GetOSPFConfigAction extends JunosAction {
 	private System removeRIP(System routerModel, RIPService ripService) {
 		// REMOVE ALL MODEL RELATED TO RIP
 		for (RIPGroup ripGroup : ripService.getRIPGroups()) {
-			ripGroup.unsetRIPGroupConfiguration(ripGroup.getRIPGroupConfiguration());
 			for (RIPProtocolEndpoint endpoint : ripGroup.getRIPProtocolEndpoints()) {
 				ripGroup.removeEndpointFromRIPGroup(endpoint);
 			}

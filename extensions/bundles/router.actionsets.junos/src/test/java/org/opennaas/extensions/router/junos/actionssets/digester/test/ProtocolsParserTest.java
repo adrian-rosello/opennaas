@@ -18,7 +18,6 @@ import org.opennaas.extensions.router.model.NetworkPort;
 import org.opennaas.extensions.router.model.OSPFAreaConfiguration;
 import org.opennaas.extensions.router.model.OSPFProtocolEndpointBase;
 import org.opennaas.extensions.router.model.OSPFService;
-import org.opennaas.extensions.router.model.RIPConfiguration;
 import org.opennaas.extensions.router.model.RIPGroup;
 import org.opennaas.extensions.router.model.RIPProtocolEndpoint;
 import org.opennaas.extensions.router.model.RIPService;
@@ -114,7 +113,7 @@ public class ProtocolsParserTest {
 	}
 
 	@Test
-	public void testParserWithMultipleRIPGroups() throws Exception {
+	public void testParserWithRIPGroups() throws Exception {
 
 		String message = readStringFromFile("/parsers/getConfigWithRIP.xml");
 		System model = createSampleModel();
@@ -136,11 +135,6 @@ public class ProtocolsParserTest {
 		RIPGroup ripGroup2 = groupList.get(1);
 		Assert.assertEquals("The name of the first group should be \"RIP Group 1\"", ripGroup1.getName(), "RIP Group 1");
 		Assert.assertEquals("The name of the second group should be \"RIP Group 2\"", ripGroup2.getName(), "RIP Group 2");
-
-		RIPConfiguration config = ripGroup1.getRIPGroupConfiguration();
-		Assert.assertNotNull("There should be a RIP Configuration for \"RIP Group 1\" stored.", config);
-		config = ripGroup2.getRIPGroupConfiguration();
-		Assert.assertNotNull("There should be a RIP Configuration for \"RIP Group 2\" stored.", config);
 
 		List<RIPProtocolEndpoint> endpointList = ripGroup1.getRIPProtocolEndpoints();
 		Assert.assertEquals(endpointList.size(), 2);

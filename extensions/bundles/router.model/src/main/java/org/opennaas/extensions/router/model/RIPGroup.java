@@ -38,23 +38,6 @@ public class RIPGroup extends RoutingProtocolDomain implements Serializable {
 		return (RIPService) this.getFirstFromAssociatedElementByType(RIPHostedGroup.class);
 	}
 
-	public void setRIPGroupConfiguration(RIPConfiguration config) {
-		if (config != null)
-			RIPGroupConfiguration.link(this, config);
-	}
-
-	public void unsetRIPGroupConfiguration(RIPConfiguration config) {
-		if (config != null) {
-			Association a = this.getFirstToAssociationByTypeAndElement(RIPGroupConfiguration.class, config);
-			if (a != null)
-				a.unlink();
-		}
-	}
-
-	public RIPConfiguration getRIPGroupConfiguration() {
-		return (RIPConfiguration) this.getFirstToAssociatedElementByType(RIPGroupConfiguration.class);
-	}
-
 	public void addEndpointToRIPGroup(RIPProtocolEndpoint endpoint) {
 		if (endpoint != null)
 			EndpointInGroup.link(this, endpoint);

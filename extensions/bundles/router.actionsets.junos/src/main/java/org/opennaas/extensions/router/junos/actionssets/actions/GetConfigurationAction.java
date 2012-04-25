@@ -244,7 +244,6 @@ public class GetConfigurationAction extends JunosAction {
 	private System removeRIP(System routerModel, RIPService ripService) {
 		// REMOVE ALL MODEL RELATED TO RIP
 		for (RIPGroup ripGroup : ripService.getRIPGroups()) {
-			ripGroup.unsetRIPGroupConfiguration(ripGroup.getRIPGroupConfiguration());
 			for (RIPProtocolEndpoint endpoint : ripGroup.getRIPProtocolEndpoints()) {
 				ripGroup.removeEndpointFromRIPGroup(endpoint);
 			}

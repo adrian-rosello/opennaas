@@ -12,7 +12,6 @@ import org.opennaas.extensions.router.model.OSPFArea;
 import org.opennaas.extensions.router.model.OSPFAreaConfiguration;
 import org.opennaas.extensions.router.model.OSPFProtocolEndpoint;
 import org.opennaas.extensions.router.model.OSPFService;
-import org.opennaas.extensions.router.model.RIPConfiguration;
 import org.opennaas.extensions.router.model.RIPGroup;
 import org.opennaas.extensions.router.model.RIPProtocolEndpoint;
 import org.opennaas.extensions.router.model.RIPService;
@@ -289,9 +288,6 @@ public class ProtocolsParser extends DigesterEngine {
 		Object obj = peek(0);
 		assert (obj instanceof RIPGroup);
 		RIPService ripService = obtainRIPService();
-
-		RIPConfiguration ripConfig = new RIPConfiguration();
-		ripConfig.setRIPGroup(ripGroup);
 
 		ripService.addRIPGroup(ripGroup);
 
