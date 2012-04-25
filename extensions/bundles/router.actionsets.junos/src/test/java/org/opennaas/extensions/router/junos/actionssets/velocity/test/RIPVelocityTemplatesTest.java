@@ -39,6 +39,21 @@ public class RIPVelocityTemplatesTest extends VelocityTemplatesTest {
 		log.info(XmlHelper.formatXML(message));
 	}
 
+	@Test
+	public void testRemoveRipGroupTemplate() throws Exception {
+
+		template = "/VM_files/ripRemoveGroup.vm";
+		Map<String, Object> extraParams = new HashMap<String, Object>();
+		extraParams.put("elementName", "");
+
+		String message = callVelocity(template, getRIPGroup(), extraParams);
+
+		Assert.assertNotNull(message);
+		Assert.assertTrue(message.contains("<group_name>RIP-test-group</group_name>"));
+
+		log.info(XmlHelper.formatXML(message));
+	}
+
 	private RIPGroup getRIPGroup() {
 
 		RIPGroup ripGroup = new RIPGroup();

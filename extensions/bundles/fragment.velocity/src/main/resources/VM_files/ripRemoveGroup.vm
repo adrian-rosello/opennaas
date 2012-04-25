@@ -1,0 +1,20 @@
+<configuration>
+	#set( $logicalRouter = "false" )
+	#if(!$elementName.equals("") )		
+		#set( $logicalRouter = "true" )
+	#end
+	#if($logicalRouter.equals("true"))
+		<logical-systems>
+			<name>$elementName</name>
+	#end
+	<protocols>
+		<rip>
+			<group operation="delete">
+				<group_name>$param.getName()</group_name>
+			</group>
+		</rip>
+	</protocols>
+	#if($logicalRouter.equals("true"))
+		</logical-systems>
+	#end
+</configuration>

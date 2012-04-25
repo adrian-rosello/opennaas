@@ -10,7 +10,7 @@ import org.opennaas.core.protocols.sessionmanager.ProtocolSessionManager;
 import org.opennaas.core.resources.action.ActionException;
 import org.opennaas.core.resources.action.ActionResponse;
 import org.opennaas.extensions.router.junos.actionssets.ActionConstants;
-import org.opennaas.extensions.router.junos.actionssets.actions.rip.ConfigureRIPGroupAction;
+import org.opennaas.extensions.router.junos.actionssets.actions.rip.RemoveRIPGroupAction;
 import org.opennaas.extensions.router.junos.actionssets.actions.test.ActionTestHelper;
 import org.opennaas.extensions.router.model.ComputerSystem;
 import org.opennaas.extensions.router.model.RIPGroup;
@@ -21,17 +21,17 @@ import org.opennaas.extensions.router.model.RIPProtocolEndpoint;
  * @author Adrian Rosello
  * 
  */
-public class configureRIPGroupActionTest {
+public class removeRIPGroupActionTest {
 
-	Log										log	= LogFactory.getLog(configureRIPGroupActionTest.class);
-	private static ConfigureRIPGroupAction	action;
-	static ActionTestHelper					helper;
-	static ProtocolSessionManager			protocolsessionmanager;
+	Log									log	= LogFactory.getLog(removeRIPGroupActionTest.class);
+	private static RemoveRIPGroupAction	action;
+	static ActionTestHelper				helper;
+	static ProtocolSessionManager		protocolsessionmanager;
 
 	@BeforeClass
 	public static void init() {
 
-		action = new ConfigureRIPGroupAction();
+		action = new RemoveRIPGroupAction();
 		action.setModelToUpdate(new ComputerSystem());
 		helper = new ActionTestHelper();
 		action.setParams(getRIPGroup());
@@ -42,7 +42,7 @@ public class configureRIPGroupActionTest {
 	@Test
 	public void actionIDTest() {
 
-		Assert.assertEquals("Wrong ActionID", ActionConstants.RIP_CONFIGURE_GROUP,
+		Assert.assertEquals("Wrong ActionID", ActionConstants.RIP_REMOVE_GROUP,
 				action.getActionID());
 	}
 
@@ -57,7 +57,7 @@ public class configureRIPGroupActionTest {
 	public void templateTest() {
 		// this action always have this template as a default
 		log.info(action.getTemplate());
-		Assert.assertEquals("Not accepted template", "/VM_files/ripConfigureGroup.vm", action.getTemplate());
+		Assert.assertEquals("Not accepted template", "/VM_files/ripRemoveGroup.vm", action.getTemplate());
 	}
 
 	@Test
@@ -71,7 +71,7 @@ public class configureRIPGroupActionTest {
 		try {
 			ActionResponse response = action.execute(protocolsessionmanager);
 			Assert.assertTrue(response.getActionID()
-					.equals(ActionConstants.RIP_CONFIGURE_GROUP));
+					.equals(ActionConstants.RIP_REMOVE_GROUP));
 		} catch (ActionException e) {
 			log.error(e.getMessage());
 			Assert.fail();
