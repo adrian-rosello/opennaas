@@ -242,7 +242,7 @@ public class GetConfigurationAction extends JunosAction {
 	}
 
 	private System removeRIP(System routerModel, RIPService ripService) {
-		// REMOVE ALL MODEL RELATED TO RIP
+		// REMOVE ALL DATA MODEL RELATED TO RIP
 		for (RIPGroup ripGroup : ripService.getRIPGroups()) {
 			for (RIPProtocolEndpoint endpoint : ripGroup.getRIPProtocolEndpoints()) {
 				ripGroup.removeEndpointFromRIPGroup(endpoint);
@@ -254,7 +254,7 @@ public class GetConfigurationAction extends JunosAction {
 	}
 
 	private System removeOSPF(System routerModel, OSPFService ospfService) {
-		// REMOVE ALL MODEL RELATED TO OSPF
+		// REMOVE ALL DATA MODEL RELATED TO OSPF
 		for (OSPFAreaConfiguration areaConf : ospfService.getOSPFAreaConfiguration()) {
 			for (OSPFProtocolEndpointBase ospfPEP : areaConf.getOSPFArea().getEndpointsInArea()) {
 				for (LogicalPort port : ospfPEP.getLogicalPorts()) {

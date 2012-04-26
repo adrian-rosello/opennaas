@@ -3,13 +3,6 @@ package org.opennaas.extensions.router.junos.actionssets.actions.ospf;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import net.i2cat.netconf.rpc.Reply;
-
-import org.opennaas.core.resources.action.ActionException;
-import org.opennaas.core.resources.action.ActionResponse;
-import org.opennaas.core.resources.command.CommandException;
-import org.opennaas.core.resources.command.Response;
-import org.opennaas.core.resources.protocol.IProtocolSession;
 import org.opennaas.extensions.router.junos.actionssets.ActionConstants;
 import org.opennaas.extensions.router.junos.actionssets.actions.JunosAction;
 import org.opennaas.extensions.router.junos.commandsets.commands.GetNetconfCommand;
@@ -25,11 +18,15 @@ import org.opennaas.extensions.router.model.ManagedElement;
 import org.opennaas.extensions.router.model.OSPFAreaConfiguration;
 import org.opennaas.extensions.router.model.OSPFProtocolEndpointBase;
 import org.opennaas.extensions.router.model.OSPFService;
-import org.opennaas.extensions.router.model.RIPGroup;
-import org.opennaas.extensions.router.model.RIPProtocolEndpoint;
-import org.opennaas.extensions.router.model.RIPService;
 import org.opennaas.extensions.router.model.Service;
 import org.opennaas.extensions.router.model.System;
+import net.i2cat.netconf.rpc.Reply;
+
+import org.opennaas.core.resources.action.ActionException;
+import org.opennaas.core.resources.action.ActionResponse;
+import org.opennaas.core.resources.command.CommandException;
+import org.opennaas.core.resources.command.Response;
+import org.opennaas.core.resources.protocol.IProtocolSession;
 import org.xml.sax.SAXException;
 
 /**
@@ -150,7 +147,7 @@ public class GetOSPFConfigAction extends JunosAction {
 	 */
 	private System parseProtocols(System routerModel, String message) throws IOException, SAXException {
 
-		routerModel = removeProtocolsServiceFromModel(routerModel);
+		routerModel = removeOSPFServiceFromModel(routerModel);
 
 		ProtocolsParser protocolsParser = new ProtocolsParser(routerModel);
 		protocolsParser.init();
@@ -158,58 +155,6 @@ public class GetOSPFConfigAction extends JunosAction {
 
 		routerModel = protocolsParser.getModel();
 
-		return routerModel;
-	}
-
-	private System removeProtocolsServiceFromModel(System routerModel) {
-
-		// get OSPFService and RIPService
-		OSPFService ospfService = null;
-		RIPService ripService = null;
-
-		for (Service service : routerModel.getHostedService()) {
-			if (service instanceof OSPFService)
-				ospfService = (OSPFService) service;
-			else if (service instanceof RIPService)
-				ripService = (RIPService) service;
-		}
-		if ((ospfService == null) && (ripService == null))
-			return routerModel;
-
-		if (ospfService != null)
-			routerModel = removeOSPF(routerModel, ospfService);
-
-		if (ripService != null)
-			routerModel = removeRIP(routerModel, ripService);
-
-		return routerModel;
-	}
-
-	private System removeRIP(System routerModel, RIPService ripService) {
-		// REMOVE ALL MODEL RELATED TO RIP
-		for (RIPGroup ripGroup : ripService.getRIPGroups()) {
-			for (RIPProtocolEndpoint endpoint : ripGroup.getRIPProtocolEndpoints()) {
-				ripGroup.removeEndpointFromRIPGroup(endpoint);
-			}
-			ripService.removeRIPGroup(ripGroup);
-		}
-		routerModel.removeHostedService(ripService);
-		return routerModel;
-	}
-
-	private System removeOSPF(System routerModel, OSPFService ospfService) {
-		// REMOVE ALL MODEL RELATED TO OSPF
-		for (OSPFAreaConfiguration areaConf : ospfService.getOSPFAreaConfiguration()) {
-			for (OSPFProtocolEndpointBase ospfPEP : areaConf.getOSPFArea().getEndpointsInArea()) {
-				for (LogicalPort port : ospfPEP.getLogicalPorts()) {
-					// unlink OSPFProtocolEndpoint with NetworkPorts.
-					ospfPEP.removeLogicalPort(port);
-				}
-				areaConf.getOSPFArea().removeEndpointInArea(ospfPEP);
-			}
-			ospfService.removeOSPFAreaConfiguration(areaConf);
-		}
-		routerModel.removeHostedService(ospfService);
 		return routerModel;
 	}
 
