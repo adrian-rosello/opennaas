@@ -40,7 +40,7 @@ public class RIPVelocityTemplatesTest extends VelocityTemplatesTest {
 	}
 
 	@Test
-	public void testRemoveRipGroupTemplate() throws Exception {
+	public void testRemoveRIPGroupTemplate() throws Exception {
 
 		template = "/VM_files/ripRemoveGroup.vm";
 		Map<String, Object> extraParams = new HashMap<String, Object>();
@@ -50,6 +50,43 @@ public class RIPVelocityTemplatesTest extends VelocityTemplatesTest {
 
 		Assert.assertNotNull(message);
 		Assert.assertTrue(message.contains("<group_name>RIP-test-group</group_name>"));
+		Assert.assertFalse(message.contains("<neighbor_name>fe-0/0/2.1</neighbor_name>"));
+		Assert.assertFalse(message.contains("<neighbor_name>fe-0/0/2.43</neighbor_name>"));
+
+		log.info(XmlHelper.formatXML(message));
+	}
+
+	@Test
+	public void testAddInterfaceToRIPGroup() throws Exception {
+		template = "/VM_files/ripAddInterfaceToGroup.vm";
+		Map<String, Object> extraParams = new HashMap<String, Object>();
+		extraParams.put("elementName", "");
+
+		String message = callVelocity(template, getRIPGroup(), extraParams);
+
+		Assert.assertNotNull(message);
+		Assert.assertTrue(message.contains("<group_name>RIP-test-group</group_name>"));
+		Assert.assertTrue(message.contains("<neighbor_name>fe-0/0/2.1</neighbor_name>"));
+		Assert.assertTrue(message.contains("<neighbor_name>fe-0/0/2.43</neighbor_name>"));
+
+		log.info(XmlHelper.formatXML(message));
+	}
+
+	@Test
+	public void testRemoveInterfaceFromRIPGroup() throws Exception {
+		template = "/VM_files/ripRemoveInterfaceFromGroup.vm";
+		Map<String, Object> extraParams = new HashMap<String, Object>();
+		extraParams.put("elementName", "logical1");
+
+		String message = callVelocity(template, getRIPGroup(), extraParams);
+
+		Assert.assertNotNull(message);
+		Assert.assertTrue(message.contains("<logical-systems>"));
+		Assert.assertTrue(message.contains("<name>logical1</name>"));
+
+		Assert.assertTrue(message.contains("<group_name>RIP-test-group</group_name>"));
+		Assert.assertTrue(message.contains("<neighbor_name>fe-0/0/2.1</neighbor_name>"));
+		Assert.assertTrue(message.contains("<neighbor_name>fe-0/0/2.43</neighbor_name>"));
 
 		log.info(XmlHelper.formatXML(message));
 	}

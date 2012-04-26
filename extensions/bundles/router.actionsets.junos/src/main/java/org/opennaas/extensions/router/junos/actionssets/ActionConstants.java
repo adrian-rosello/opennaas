@@ -54,6 +54,9 @@ public class ActionConstants {
 	// RIP actionset
 	public static final String	RIP_CONFIGURE_GROUP					= "configureRIPGroup";
 	public static final String	RIP_REMOVE_GROUP					= "removeRIPGroupAction";
+	public static final String	RIP_ADD_INTERFACE_TO_GROUP			= "ripAddInterfaceToGroup";
+	public static final String	RIP_REMOVE_INTERFACE_FROM_GROUP		= "ripRemoveInterfaceFromGroup";
+
 	// Static Route actionset
 	public static final String	STATIC_ROUTE_CREATE					= "createStaticRoute";
 
