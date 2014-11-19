@@ -37,6 +37,7 @@ import org.opennaas.extensions.genericnetwork.exceptions.CircuitAllocationExcept
 import org.opennaas.extensions.genericnetwork.exceptions.NotExistingCircuitException;
 import org.opennaas.extensions.genericnetwork.model.circuit.request.CircuitRequest;
 import org.opennaas.extensions.ofertie.ncl.Activator;
+import org.opennaas.extensions.ofertie.ncl.helpers.QoSPolicyRequestHelper;
 import org.opennaas.extensions.ofertie.ncl.helpers.QoSPolicyRequestWrapperParser;
 import org.opennaas.extensions.ofertie.ncl.helpers.QosPolicyRequestParser;
 import org.opennaas.extensions.ofertie.ncl.provisioner.api.INCLProvisioner;
@@ -180,7 +181,10 @@ public class NCLProvisioner implements INCLProvisioner {
 			try {
 
 				QosPolicyRequest qosPolicyRequest = getFlow(flowId);
-				qosPolicyRequest.setQosPolicy(updatedQosPolicy);
+
+				QosPolicy mergedQos = QoSPolicyRequestHelper.mergeQosPolicies(qosPolicyRequest.getQosPolicy(), updatedQosPolicy);
+
+				qosPolicyRequest.setQosPolicy(mergedQos);
 
 				String netId = getNetworkSelector().getNetwork();
 
